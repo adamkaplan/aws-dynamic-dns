@@ -11,7 +11,7 @@ const ROUTE53_TTL = process.env.ROUTE53_TTL;
 exports.handler = async (event) => {
   const zoneName = event.pathParameters.location;
   const srcIp = event.requestContext.identity.sourceIp;
-  const zone = `${zoneName}${ROUTE53_HOSTED_ZONE_NAME}`;
+  const zone = `${zoneName}.${ROUTE53_HOSTED_ZONE_NAME}`;
   console.log(`Will set '${zone}' to ${srcIp}`);
 
   const record = await findCurrentRecordValue(zone);
