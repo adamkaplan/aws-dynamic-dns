@@ -1,0 +1,25 @@
+---
+  - name : Set Overridden Custom Domain
+    set_fact:
+      custom_domain: "{{ apigateway_custom_domain }}"
+    when: apigateway_custom_domain is defined
+
+  - name : Set Default Execute Domain
+    set_fact:
+      custom_domain: "{{ apigateway_id }}.execute-api.{{ aws_region }}.amazonaws.com/production"
+    when: custom_domain is undefined
+
+  - debug:
+      msg: "Using API Gateway domain {{ custom_domain }}"
+
+  # Create the dynamic DNS API subdomain record
+  - name: "Create API subdomain record {{ dyndns_domain }}"
+    route53:
+      state: present
+      zone: "{{ dyndns_domain }}"
+      record: "{{ dyndns_api_domain }}"
+      type: CNAME
+      ttl: 3600
+      value: "{{ custom_domain }}"
+      overwrite: no
+      wait: yes

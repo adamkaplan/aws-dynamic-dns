@@ -1,0 +1,47 @@
+---
+
+  - name: Create Route53 update policy
+    iam_managed_policy:
+      state: present
+      policy_name: LambdaRoute53Policy
+      policy_description: Allows updating Route53 records from Lambda
+      policy: "{{ lookup('file', 'lambda_route53_update.json') }}"
+    register: route53_policy
+
+  - name: Create lambda execution role
+    iam_role:
+      name: DynDNSLambdaUpdaterExecutionRole
+      managed_policy:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - "{{ route53_policy.policy.arn }}"
+      assume_role_policy_document: "{{ lookup('file', 'lambda_policy.json') }}"
+    register: role
+
+  - name: Zip lambda deployment
+    archive:
+      path: ../lambda/*
+      dest: dynamic-dns-updater.zip
+      format: zip
+
+  - name: Install DynDNS lambda function
+    lambda:
+      name: dynamic-dns-updater
+      state: present
+      zip_file: dynamic-dns-updater.zip
+      runtime: nodejs8.10
+      role: "{{ role.iam_role.arn }}"
+      handler: index.handler
+      environment_variables:
+        ROUTE53_HOSTED_ZONE_NAME: "{{ dyndns_domain }}."
+        ROUTE53_HOSTED_ZONE_ID: "{{ hosted_zone.zone_id }}"
+        ROUTE53_TTL: '60'
+    register: lambda
+
+  - name: Delete lambda deployment zip
+    file:
+      state: absent
+      path: dynamic-dns-updater.zip
+
+  - name: Export lambda ARN
+    set_fact:
+      lambda_updater_arn: "{{ lambda.configuration.function_arn }}"

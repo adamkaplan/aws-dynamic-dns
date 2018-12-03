@@ -1,0 +1,9 @@
+---
+# vars file for dyndns
+
+aws_region: "{{ lookup('env', 'AWS_REGION') }}"
+
+apigateway_id: "{{ lookup('env', 'API_GATEWAY_ID') }}"
+
+dyndns_domain: "{{ lookup('env', 'DYNDNS_DOMAIN') }}"
+dyndns_api_domain: "{{ lookup('env', 'DYNDNS_API_DOMAIN') }}"

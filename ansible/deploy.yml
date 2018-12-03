@@ -1,0 +1,13 @@
+- name: Provision Dynamic DNS
+  hosts: localhost
+  connection: local
+  strategy: debug
+
+  vars_files:
+    - "group_vars/main.yml"
+
+  roles:
+    - route53_zone
+    - lambda
+    - api-gateway
+    - route53_domain

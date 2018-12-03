@@ -1,0 +1,45 @@
+---
+swagger: "2.0"
+info:
+#  version: "2018-11-14T13:45:08Z"
+  title: "DynamicDNS"
+  basePath: "/Production"
+schemes:
+- "https"
+paths:
+  /location/{location}:
+    put:
+      produces:
+      - "application/json"
+      parameters:
+      - name: "location"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+      security:
+      - api_key: []
+      x-amazon-apigateway-integration:
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{{ lambda_updater_arn }}/invocations"
+        credentials: "{{ lambda_invoke_role.iam_role.arn }}"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+securityDefinitions:
+  api_key:
+    type: "apiKey"
+    name: "x-api-key"
+    in: "header"
+definitions:
+  Empty:
+    type: "object"
+    title: "Empty Schema"
+

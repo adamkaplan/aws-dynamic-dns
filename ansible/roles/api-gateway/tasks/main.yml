@@ -1,0 +1,33 @@
+---
+  - debug:
+      msg: "Lambda ARN is {{ lambda_updater_arn }}"
+
+  - name: Create Lambda invoke role for API Gateway
+    iam_role:
+      name: DynDNSAPIGatewayLambdaInvokeRole
+      managed_policy:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+      assume_role_policy_document: "{{ lookup('file', 'api_gateway_log_policy.json') }}"
+    register: lambda_invoke_role
+
+  - name: Create Dynanmic DNS API gateway
+    aws_api_gateway:
+      api_id: "{{ apigateway_id }}" # comment out or undefined = re-create API
+      state: present
+      swagger_text: "{{ lookup('template', 'templates/api_gateway.yml') }}"
+      stage: production
+    register: api_gateway
+
+  - name: Create CloudWatch logging role for API Gateway (set manually in web UI)
+    iam_role:
+      name: DynDNSAPIGatewayCloudWatchLogPushRole
+      managed_policy:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
+      assume_role_policy_document: "{{ lookup('file', 'api_gateway_log_policy.json') }}"
+
+  - name: Export API Gateway facts
+    set_fact:
+      apigateway_id: "{{ api_gateway.configure_response.id }}"
+
+  - debug:
+      msg: "API Gateway ID is {{ apigateway_id }}"

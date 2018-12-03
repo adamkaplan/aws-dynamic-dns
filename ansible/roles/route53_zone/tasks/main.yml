@@ -1,0 +1,26 @@
+---
+  - name: Check for API Gateway custom domain
+    shell: |
+      aws apigateway get-domain-name --domain-name $DYNDNS_API_DOMAIN
+      exit 0
+    register: custom_domain_output
+    when: not "{{ dyndns_api_domain }}" == ""
+
+  - name: Parse JSON from AWS API Gateway Custom Domain fetch
+    set_fact:
+      custom_domain_config: "{{ custom_domain_output.stdout | from_json }}"
+    when: not custom_domain_output.stdout == ""
+
+  - name: Set custom domain fact from API Gateway
+    set_fact:
+      apigateway_custom_domain: "{{ custom_domain_config.regionalDomainName }}"
+    when: custom_domain_config is defined
+
+  - debug:
+      var: apigateway_custom_domain
+
+  - name: Create Route53 hosted zone
+    route53_zone:
+      zone: "{{ dyndns_domain }}"
+      comment: "Zone for {{ dyndns_domain }}"
+    register: hosted_zone
