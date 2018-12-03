@@ -80,17 +80,25 @@ The final step is to set up a client to hit the API at periodic intervals to upd
 
 ### Making API Calls
 
-```
-# For Custom API Domain Only:
-curl -v -X PUT https://api.mydomain.com/v1/location/home
+The API has a single HTTP endpoint `PUT /location/<name>` which allows you to set the name for the DynamicDNS entry that will be created or updated. For example calling `PUT /location/home` will result in home.mydomain.com, and `PUT /location/office` will likewise result in setting office.mydomain.dom.
 
+The API URL is defined by API Gateway using a format comprised of the API Gateway ID, the AWS Region, the API Gateway Stage, and the API Endpoint itself: `https://<apigateway id>.execute-api.<aws region>.amazonaws.com/<apigateway stage>/location/<name>`
+
+For our example configuration above, it would be:
+```
 # Direct request (replace 'dav54fvlrg' with API Gateway ID and us-east-1 if needed):
 curl -v -X PUT https://dav54fvlrg.execute-api.us-east-1.amazonaws.com/production/location/home
 ```
 
-These commands should result in `{"message":"Forbidden"}` and `HTTP 403`. This is because you haven't created any API keys yet! We'll do that in the next section.
+Alternatively, if you provided a Custom API Domain Name, you can access the API by the friendlier and more official:
+```
+# For Custom API Domain Only:
+curl -v -X PUT https://api.mydomain.com/v1/location/home
+```
 
-If you received any other error besides `HTTP 403 Forbidden`, or you got `HTTP 200 OK`, there is a problem. You need to figure out the problem prior to moving on.
+Run the curl command against you new API. It should result in `{"message":"Forbidden"}` and `HTTP 403`. This is because you haven't created any API keys yet! We'll do that in the next section.
+
+_If you received any other error besides `HTTP 403 Forbidden`, or you got `HTTP 200 OK`, there is a problem. You need to figure out the problem prior to moving on._
 
 ### Authorizing a new client
 
@@ -128,6 +136,18 @@ Select `Create API Key` from the `Action` menu. Enter a `Name` for the key, sele
 On the next screen, hit the `Add to Usage Plan` button, enter the name of the plan created in the previous step (`DynamicDNS Hourly Plan`) and press the tiny CHECK button on the right.
 
 Finally, click `Show` to get your new API Key! It should look like this `3qAqBbm4ho3DYPLj9X3XU9eBhk7UwkM461LIuujL`.
+
+## Setting Up A Cron Job
+
+To update the Dynamic DNS hourly on most Linux, use this command (replacing example values):
+```
+sudo echo "0 * * * * /bin/curl https://dav54fvlrg.execute-api.us-east-1.amazonaws.com/production/location/home -v -X PUT -H \"x-api-key: 3qAqBbm4ho3DYPLj9X3XU9eBhk7UwkM461LIuujL\"" >> /etc/cron.d/50dyndns-update
+```
+
+Or, for a custom API domain
+```
+sudo echo "0 * * * * /bin/curl https://api.mydomain.com/v1/location/home -v -X PUT -H \"x-api-key: 3qAqBbm4ho3DYPLj9X3XU9eBhk7UwkM461LIuujL\"" >> /etc/cron.d/50dyndns-update
+```
 
 ## Author
 
