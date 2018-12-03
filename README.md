@@ -74,6 +74,61 @@ Simply run `sh deploy.sh` after setting all of the required values in that scrip
 
 After the first run succeeds, you must set the API Gateway ID in the script (instructions above). Once this step is complete, you can run this playbook over and over to deploy updates or make changes.
 
+## Setting up a new Dyanmic DNS client
+
+The final step is to set up a client to hit the API at periodic intervals to update a Dyanamic DNS record. Luckily the client requirements are trivial. You could even use a browser bookmark to manually update the Dyanmic DNS, but the most reliable strategy is to use a cron job.
+
+### Making API Calls
+
+```
+# For Custom API Domain Only:
+curl -v -X PUT https://api.mydomain.com/v1/location/home
+
+# Direct request (replace 'dav54fvlrg' with API Gateway ID and us-east-1 if needed):
+curl -v -X PUT https://dav54fvlrg.execute-api.us-east-1.amazonaws.com/production/location/home
+```
+
+These commands should result in `{"message":"Forbidden"}` and `HTTP 403`. This is because you haven't created any API keys yet! We'll do that in the next section.
+
+If you received any other error besides `HTTP 403 Forbidden`, or you got `HTTP 200 OK`, there is a problem. You need to figure out the problem prior to moving on.
+
+### Authorizing a new client
+
+Before we make any calls to the API, each client needs an API Key for use with API Gateway. If you don't use API Keys, anybody on the Internet can mess with your DNS!
+
+#### Method 1: Using AWS Web Console
+
+##### Creating an API Usage Plan
+
+Head over to the API Gateway page on AWS Console, and open the Usage Plan section (Link for us-east-1 is [here](https://console.aws.amazon.com/apigateway/home?region=us-east-1#/usage-plans)).
+
+Hit the `Create` button, and fill out the form sections "Name and Description", "Thorttling" and "Quota". You can use any values you want. It is highly recommended to set a throttle and quota to prevent runaway AWS costs. A good default for this service is for clients to update Dynamic DNS hourly.
+
+For an hourly Dyanmic DNS update, use these values:
+- Name: `DynamicDNS Hourly Plan`
+- Enable Throttling: checked
+  - Rate: 1
+  - Burst: 1
+- Enable Quota: checked
+  - `800` requests per `Month`.
+- Press `Save`
+
+Under *Associated API Stages*, press "Add API Stage". Select `DynamicDNS` for API and `production` for Stage.
+
+Now that we have defined a usage plan and associated it with the new API, lets create some keys!
+
+##### Issue new API Keys for a Usage Plan
+
+API Keys should be issued to each client and kept secure like passwords. Anybody with an API Key can use your Dyanmic DNS API, which means they can alter you DNS – no good!
+
+Proceed to the API Gateway page on AWS Console, and open the API Keys section (Link for us-east-1 is [here](https://console.aws.amazon.com/apigateway/home?region=us-east-1#/api-keys/create)).
+
+Select `Create API Key` from the `Action` menu. Enter a `Name` for the key, select `Auto Generate`, and `Save`.
+
+On the next screen, hit the `Add to Usage Plan` button, enter the name of the plan created in the previous step (`DynamicDNS Hourly Plan`) and press the tiny CHECK button on the right.
+
+Finally, click `Show` to get your new API Key! It should look like this `3qAqBbm4ho3DYPLj9X3XU9eBhk7UwkM461LIuujL`.
+
 ## Author
 
 Adam Kaplan <adkap at adkap dot com>
