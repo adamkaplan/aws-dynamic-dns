@@ -1,18 +1,18 @@
 # aws-dynamic-dns
 
-Tired of all the low cost, easy to use Dynamic DNS options out there? When you see a table, do you think "I could make that"?
+Tired of all the low cost easy to use Dynamic DNS options out there? When you see a table, do you think "I could make that?"
 
 If you answered yes to either of these questions, you are a good candidate for `aws-dynamic-dns`. This project has two main components: a lambda function to update DNS records, and an Ansible Playbook to configure and deploy your cloud stack.
 
 ## The Lambda
 
-The Lambda function here doesn't do all that much. It grabs the= IP of the client that invoked it, and sets that IP into a DNS record. The DNS record is specified in the request, and is created if needed (upsert).
+The Lambda function here doesn't do all that much. It grabs the IP of the client that invoked it and sets that IP into a DNS record. The DNS record is specified in the request and is created if needed (upsert).
 
 ## AWS Components
 
 - Route53 manages DNS records
 - Lambda processes incoming requests & updates DNS
-- API Gateway manages API-Key authentication, and HTTP routing
+- API Gateway manages API-Key authentication and HTTP routing
 - CloudWatch provides request and lambda execution logging
 - Certificate Manager provides SSL
 
@@ -37,7 +37,7 @@ Locally, you need to install the following:
 
 ### Setup
 
-You need tell the Ansible Playbook about your AWS account and domain name.
+You need to tell the Ansible Playbook about your AWS account and domain name.
 
 Edit the file `deploy.sh`
 ```
@@ -64,7 +64,7 @@ Set this to the main zone that will be used for Dynamic DNS. For example, if you
 ```
 export DYNDNS_API_DOMAIN="api.${DYNDNS_DOMAIN}"
 ```
-Set this field to the domain that you want to use for the Dynamic DNS API itself. The default is to add `api.` to the `DYNDNS_DOMAIN` set (above), however you can set it to any other domain that you control.
+Set this field to the domain that you want to use for the Dynamic DNS API itself. The default is to add `api.` to the `DYNDNS_DOMAIN` set (above), however, you can set it to any other domain that you control.
 
 ## Running
 
@@ -74,13 +74,13 @@ Simply run `sh deploy.sh` after setting all of the required values in that scrip
 
 After the first run succeeds, you must set the API Gateway ID in the script (instructions above). Once this step is complete, you can run this playbook over and over to deploy updates or make changes.
 
-## Setting up a new Dyanmic DNS client
+## Setting up a new Dynamic DNS client
 
-The final step is to set up a client to hit the API at periodic intervals to update a Dyanamic DNS record. Luckily the client requirements are trivial. You could even use a browser bookmark to manually update the Dyanmic DNS, but the most reliable strategy is to use a cron job.
+The final step is to set up a client to hit the API at periodic intervals to update a Dynamic DNS record. Luckily the client requirements are trivial. You could even use a browser bookmark to manually update the Dynamic DNS, but the most reliable strategy is to use a cron job.
 
 ### Making API Calls
 
-The API has a single HTTP endpoint `PUT /location/<name>` which allows you to set the name for the DynamicDNS entry that will be created or updated. For example calling `PUT /location/home` will result in home.mydomain.com, and `PUT /location/office` will likewise result in setting office.mydomain.dom.
+The API has a single HTTP endpoint `PUT /location/<name>` which allows you to set the name for the DynamicDNS entry that will be created or updated. For example, calling `PUT /location/home` will result in home.mydomain.com, and `PUT /location/office` will likewise result in setting office.mydomain.dom.
 
 The API URL is defined by API Gateway using a format comprised of the API Gateway ID, the AWS Region, the API Gateway Stage, and the API Endpoint itself: `https://<apigateway id>.execute-api.<aws region>.amazonaws.com/<apigateway stage>/location/<name>`
 
@@ -96,7 +96,7 @@ Alternatively, if you provided a Custom API Domain Name, you can access the API 
 curl -v -X PUT https://api.mydomain.com/v1/location/home
 ```
 
-Run the curl command against you new API. It should result in `{"message":"Forbidden"}` and `HTTP 403`. This is because you haven't created any API keys yet! We'll do that in the next section.
+Run the curl command against your new API. It should result in `{"message":"Forbidden"}` and `HTTP 403`. This is because you haven't created any API keys yet! We'll do that in the next section.
 
 _If you received any other error besides `HTTP 403 Forbidden`, or you got `HTTP 200 OK`, there is a problem. You need to figure out the problem prior to moving on._
 
@@ -110,9 +110,9 @@ Before we make any calls to the API, each client needs an API Key for use with A
 
 Head over to the API Gateway page on AWS Console, and open the Usage Plan section (Link for us-east-1 is [here](https://console.aws.amazon.com/apigateway/home?region=us-east-1#/usage-plans)).
 
-Hit the `Create` button, and fill out the form sections "Name and Description", "Thorttling" and "Quota". You can use any values you want. It is highly recommended to set a throttle and quota to prevent runaway AWS costs. A good default for this service is for clients to update Dynamic DNS hourly.
+Hit the `Create` button, and fill out the form sections "Name and Description", "Throttling" and "Quota". You can use any values you want. It is highly recommended to set a throttle and quota to prevent runaway AWS costs. A good default for this service is for clients to update Dynamic DNS hourly.
 
-For an hourly Dyanmic DNS update, use these values:
+For an hourly Dynamic DNS update, use these values:
 - Name: `DynamicDNS Hourly Plan`
 - Enable Throttling: checked
   - Rate: 1
@@ -123,11 +123,11 @@ For an hourly Dyanmic DNS update, use these values:
 
 Under *Associated API Stages*, press "Add API Stage". Select `DynamicDNS` for API and `production` for Stage.
 
-Now that we have defined a usage plan and associated it with the new API, lets create some keys!
+Now that we have defined a usage plan and associated it with the new API, let's create some keys!
 
 ##### Issue new API Keys for a Usage Plan
 
-API Keys should be issued to each client and kept secure like passwords. Anybody with an API Key can use your Dyanmic DNS API, which means they can alter you DNS – no good!
+API Keys should be issued to each client and kept secure like passwords. Anybody with an API Key can use your Dynamic DNS API, which means they can alter you DNS – no good!
 
 Proceed to the API Gateway page on AWS Console, and open the API Keys section (Link for us-east-1 is [here](https://console.aws.amazon.com/apigateway/home?region=us-east-1#/api-keys/create)).
 
