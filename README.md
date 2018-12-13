@@ -1,6 +1,6 @@
 # aws-dynamic-dns
 
-Tired of all the low cost, easy to use Dynamic DNS options out there? Want you see a table, do you think "I could make that"?
+Tired of all the low cost, easy to use Dynamic DNS options out there? When you see a table, do you think "I could make that"?
 
 If you answered yes to either of these questions, you are a good candidate for `aws-dynamic-dns`. This project has two main components: a lambda function to update DNS records, and an Ansible Playbook to configure and deploy your cloud stack.
 
