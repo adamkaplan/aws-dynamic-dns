@@ -141,12 +141,12 @@ Finally, click `Show` to get your new API Key! It should look like this `3qAqBbm
 
 To update the Dynamic DNS hourly on most Linux, use this command (replacing example values):
 ```
-sudo echo "0 * * * * /bin/curl https://dav54fvlrg.execute-api.us-east-1.amazonaws.com/production/location/home -v -X PUT -H \"x-api-key: 3qAqBbm4ho3DYPLj9X3XU9eBhk7UwkM461LIuujL\"" >> /etc/cron.d/50dyndns-update
+sudo echo "0 * * * * /bin/curl https://abcdef.execute-api.us-east-1.amazonaws.com/production/location/home -v -X PUT -H \"x-api-key: xxxxx\"" >> /etc/cron.d/50dyndns-update
 ```
 
 Or, for a custom API domain
 ```
-sudo echo "0 * * * * /bin/curl https://api.mydomain.com/v1/location/home -v -X PUT -H \"x-api-key: 3qAqBbm4ho3DYPLj9X3XU9eBhk7UwkM461LIuujL\"" >> /etc/cron.d/50dyndns-update
+sudo echo "0 * * * * /bin/curl https://api.mydomain.com/v1/location/home -v -X PUT -H \"x-api-key: xxxxx\"" >> /etc/cron.d/50dyndns-update
 ```
 
 ## Author
